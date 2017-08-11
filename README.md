@@ -1,4 +1,4 @@
-# An ansible based proisioner for WordPress
+# An ansible based provisioner for WordPress
 
 ## How to use
 
