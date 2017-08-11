@@ -4,25 +4,37 @@
 
 SSH into your machine.
 
-```bash
+```
 $ ssh ubuntu@<ip>
 ```
 
 Then run following.
 
-```bash
+```
 $ curl https://raw.githubusercontent.com/coderdojo-japan/dojopaas-wordpress/master/provision.sh | bash
 ```
 
-## Testing
+## Contributing
 
-```bash
+```
 $ vagrant up
+```
+
+SSH into the machine.
+
+```
+$ vagrant ssh
+```
+
+Run provisioner.
+
+```
+$ cd /vagrant && ansible-playbook provision/playbook.yml --connection=local
 ```
 
 Then run automated testing.
 
-```bash
+```
 $ bundle install --path vendor/bundle
 $ bundle exec rake spec
 ```
