@@ -35,7 +35,7 @@ Document Root: /var/www/example.com/html
 Success: Adding virtual host was completed.
 ```
 
-Finally, you have to finish installing WordPress to visit your domain.
+Finally, you have to visit your domain to finish installing.
 
 ## Contributing
 
