@@ -1,0 +1,18 @@
+---
+# defaults file for common
+
+common_packages:
+  - git
+  - build-essential
+  - ruby-dev
+  - libsqlite3-dev
+  - jq
+  - subversion
+  - curl
+  - gettext
+  - python-mysqldb
+  - imagemagick
+  - libssl-dev
+  - letsencrypt
+  - makepasswd
+  - exim4

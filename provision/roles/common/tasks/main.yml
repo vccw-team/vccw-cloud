@@ -1,0 +1,40 @@
+---
+  - name: Update all packages to the latest version
+    become: yes
+    apt:
+      update_cache: yes
+      upgrade: dist
+
+  - name: Install common packages
+    become: yes
+    apt: name={{ item }} state=latest update_cache=yes
+    with_items: "{{ common_packages }}"
+
+  # Setup bash
+  - name: Place the `~/.bash_profile`
+    become: no
+    copy:
+      src: .bash_profile
+      dest: "{{ ansible_env.HOME }}/.bash_profile"
+
+  - name: Place the `~/.bash.d/`
+    become: no
+    file:
+      path: "{{ ansible_env.HOME }}/.bash.d"
+      state: directory
+
+  # Setup aws cli
+  - name: Download PIP installer
+    get_url:
+      url: https://bootstrap.pypa.io/get-pip.py
+      dest: /tmp/get-pip.py
+      mode: 0644
+
+  - name: Install PIP
+    become: yes
+    shell: python /tmp/get-pip.py
+
+  - name: Install aws-cli
+    become: yes
+    pip:
+      name: awscli

@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+
+set -eu
+
+error() {
+  echo -e "\033[0;31m$1\033[0;39m";
+  exit 1;
+}
+
+warn() {
+  echo -e "\033[0;33mWarning:\033[0;39m: $1";
+}
+
+success() {
+  echo -e "\033[0;32mSuccess:\033[0;39m $1";
+}
+
+if [ 'root' != `whoami` ]; then
+  error "Error: You don't have permission."
+fi
+
+if [ $# -lt 1 ]; then
+	error "Usage: addvhost <host-name>"
+fi
+
+if [[ ! "$1" =~ ^([a-z0-9\-]+\.)+[a-z]{2,3}$ ]]; then
+	error "Usage: addvhost <host-name>"
+fi
+
+HOST_NAME=$1
+HOST_DIR=/var/www/$HOST_NAME
+if [ -e $HOST_DIR/wp-config.php ]; then
+  MYSQL_PASSWORD=`sudo -u {{ ansible_env.USER }} wp eval "echo DB_PASSWORD;" --path=$HOST_DIR/html`
+else
+  MYSQL_PASSWORD=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1`
+fi
+CERT_CRT=/etc/nginx/ssl/server.crt
+CERT_KEY=/etc/nginx/ssl/server.key
+
+if [ ! -e /etc/letsencrypt/live/${HOST_NAME} ]; then
+  service nginx stop
+  set +e
+  letsencrypt certonly --standalone -d $HOST_NAME
+  set -e
+  service nginx start
+fi
+
+if [ -e /etc/letsencrypt/live/${HOST_NAME} ]; then
+  CERT_CRT=/etc/letsencrypt/live/${HOST_NAME}/fullchain.pem
+  CERT_KEY=/etc/letsencrypt/live/${HOST_NAME}/privkey.pem;
+fi
+
+sudo -u root -H mysql -e "CREATE DATABASE IF NOT EXISTS \`$HOST_NAME\`;"
+success "Created a MySQL database \`$HOST_NAME\`."
+sudo -u root -H mysql -e "CREATE USER IF NOT EXISTS '$HOST_NAME'@'localhost';"
+sudo -u root -H mysql -e "SET PASSWORD FOR '$HOST_NAME'@'localhost'=password('$MYSQL_PASSWORD');"
+success "Created a MySQL user \`$HOST_NAME\`."
+sudo -u root -H mysql -e "GRANT ALL PRIVILEGES ON \`$HOST_NAME\` . * TO '$HOST_NAME'@'localhost' WITH GRANT OPTION;"
+
+mkdir -p $HOST_DIR
+success "Created a directory \`$HOST_DIR\`."
+
+cat <<EOS > /etc/apache2/sites-available/${HOST_NAME}.conf
+<VirtualHost *:8080>
+  ServerName ${HOST_NAME}
+  DocumentRoot /var/www/${HOST_NAME}/html
+
+  ErrorLog \${APACHE_LOG_DIR}/error.log
+
+  <Directory /var/www/${HOST_NAME}/html>
+    Options FollowSymLinks MultiViews
+    AllowOverride All
+  </Directory>
+</VirtualHost>
+EOS
+success "Created a \`/etc/apache2/sites-available/${HOST_NAME}.conf\`."
+
+cat <<EOS > /etc/nginx/conf.d/${HOST_NAME}.conf
+proxy_cache_path  /var/cache/nginx/${HOST_NAME} levels=1:2 keys_zone=${HOST_NAME}:4m max_size=50m inactive=30d;
+
+server {
+  listen 80;
+  server_name ${HOST_NAME} *.${HOST_NAME};
+  return 301 https://${HOST_NAME}\$request_uri;
+}
+
+server {
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+  server_name ${HOST_NAME};
+  client_max_body_size 10M;
+
+  ssl_certificate ${CERT_CRT};
+  ssl_certificate_key ${CERT_KEY};
+  ssl_session_timeout 1d;
+  ssl_session_cache shared:SSL:50m;
+  ssl_session_tickets on;
+
+  ssl_dhparam /etc/ssl/private/dhparam.pem;
+
+  ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+  ssl_ciphers 'ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS';
+  ssl_prefer_server_ciphers on;
+
+  location / {
+    proxy_set_header Host \$host;
+    proxy_set_header Remote-Addr \$remote_addr;
+    proxy_set_header HTTP_X_FORWARDED_PROTO 'https';
+    proxy_cache ${HOST_NAME};
+    proxy_cache_key "\$scheme://\$host\$request_uri";
+    proxy_cache_valid  200 301 302 303 304 0;
+    proxy_cache_valid any 0;
+    proxy_pass http://localhost:8080;
+  }
+  location ~* ^.+.(jpg|jpeg|gif|css|png|js|svg|ico)$ {
+    root ${HOST_DIR}/html;
+    expires 365d;
+  }
+}
+EOS
+success "Created a \`/etc/nginx/conf.d/${HOST_NAME}.conf\`."
+
+mkdir -p $HOST_DIR/html
+chown -R {{ ansible_env.USER }}:{{ ansible_env.USER }} $HOST_DIR
+
+if [ ! -e $HOST_DIR/html/wp-settings.php ]; then
+  sudo -u {{ ansible_env.USER }} wp core download --path=$HOST_DIR/html
+  echo "@${HOST_NAME}:" >> ~/.wp-cli/config.yml
+  echo "  path: ${HOST_DIR}/html" >> ~/.wp-cli/config.yml
+fi
+
+if [ -e $HOST_DIR/wp-config.php ]; then
+  rm -f $HOST_DIR/wp-config.php
+fi
+
+sudo -u {{ ansible_env.USER }} wp core config \
+--dbname="$HOST_NAME" \
+--dbuser="$HOST_NAME" \
+--dbpass="$MYSQL_PASSWORD" \
+--path=$HOST_DIR/html \
+--extra-php <<PHP
+define( 'WP_HOME', 'https://${HOST_NAME}' );
+define( 'WP_SITEURL', 'https://${HOST_NAME}' );
+define( 'DISALLOW_FILE_MODS', true );
+define( 'FORCE_SSL_ADMIN', true );
+\$_SERVER['HTTPS'] = 'on';
+PHP
+mv $HOST_DIR/html/wp-config.php $HOST_DIR/wp-config.php
+
+chown -R {{ ansible_env.USER }}:{{ ansible_env.USER }} $HOST_DIR
+
+a2ensite $HOST_NAME >/dev/null 2>&1
+service apache2 restart
+service nginx restart
+success "Nginx and Apache2 was successfully restarted."
+
+echo "path: html" > $HOST_DIR/wp-cli.yml
+
+echo "---"
+echo "Hostname: $HOST_NAME"
+echo "MySQL Database: $HOST_NAME"
+echo "MySQL User: $HOST_NAME"
+echo "MySQL Password: $MYSQL_PASSWORD"
+echo "Document Root: $HOST_DIR/html"
+echo "---"
+success "Adding virtual host was completed."
+
+exit 0

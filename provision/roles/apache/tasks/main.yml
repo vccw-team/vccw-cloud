@@ -1,0 +1,83 @@
+---
+# tasks file for apache2
+
+  - name: Ensure apache is installed
+    become: yes
+    apt: pkg=apache2 state=latest
+
+  - name: Activate mod rewrite
+    become: yes
+    apache2_module: state=present name=rewrite
+
+  - name: Make sure apache is running
+    become: yes
+    action: service name=apache2 state=started enabled=true
+
+  - name: Place the `/etc/apache2/ports.conf`
+    become: yes
+    copy:
+      src: files/ports.conf
+      dest: "/etc/apache2/ports.conf"
+    notify: restart-apache
+
+  - name: "Replacing the Apache User"
+    become: yes
+    replace:
+      dest: /etc/apache2/envvars
+      regexp: APACHE_RUN_USER=.*
+      replace: "APACHE_RUN_USER={{ ansible_env.USER }}"
+    notify:
+      - restart-apache
+
+  - name: "Replacing the Apache Group"
+    become: yes
+    replace:
+      dest: /etc/apache2/envvars
+      regexp: APACHE_RUN_GROUP=.*
+      replace: "APACHE_RUN_GROUP={{ ansible_env.USER }}"
+    notify:
+      - restart-apache
+
+  - name: "Disable keepalive"
+    become: yes
+    replace:
+      dest: /etc/apache2/apache2.conf
+      regexp: KeepAlive .*
+      replace: "KeepAlive Off"
+    notify:
+      - restart-apache
+
+  - name: "Setup timeout"
+    become: yes
+    replace:
+      dest: /etc/apache2/apache2.conf
+      regexp: Timeout .*
+      replace: "Timeout 10"
+    notify:
+      - restart-apache
+
+  - name: "Disable settings"
+    become: yes
+    shell: a2disconf {{ item }}
+    with_items:
+      - serve-cgi-bin
+      - localized-error-pages
+      - other-vhosts-access-log
+    notify:
+      - restart-apache
+
+  - name: "Disable modules"
+    become: yes
+    shell: a2dismod {{ item }}
+    with_items:
+      - status
+    notify:
+      - restart-apache
+
+  - name: Change owner `/var/www`
+    become: yes
+    file:
+      path: /var/www
+      recurse: yes
+      owner: "{{ ansible_env.USER }}"
+      group: "{{ ansible_env.USER }}"

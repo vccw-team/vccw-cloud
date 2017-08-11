@@ -1,0 +1,31 @@
+{% raw %}
+production:
+  vhost: "{{ home_url }}"
+  wordpress_path: "{{ wordpress_path }}" # use an absolute path here
+
+  database:
+    name: "{{ db_name }}"
+    user: "{{ db_user }}"
+    password: "{{ db_pass }}"
+    host: "{{ db_host }}"
+    charset: "{{ db_charset }}"
+    port: "3308" # Use just in case you have exotic server config
+    mysqldump_options: "--max_allowed_packet=50MB" # Only available if using SSH
+{% endraw %}
+
+  exclude:
+    - ".git/"
+    - ".gitignore"
+    - ".sass-cache/"
+    - "bin/"
+    - "tmp/*"
+    - "Gemfile*"
+    - "Movefile"
+    - "wp-config.php"
+    - "wp-content/*.sql"
+
+  ssh:
+    host: "{{ inventory_hostname }}"
+    user: "{{ ansible_env.USER }}"
+    port: {{ hostvars[inventory_hostname].ansible_ssh_port }} # Port is optional
+    rsync_options: "--verbose" # Additional rsync options, optional

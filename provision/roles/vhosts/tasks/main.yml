@@ -1,0 +1,51 @@
+---
+  - name: Place the `wp-addvhost`
+    become: yes
+    template:
+      force: yes
+      src: wp-addvhost.j2
+      dest: "/usr/local/bin/wp-addvhost"
+      mode: "0755"
+      owner: root
+      group: root
+
+  - name: Place the `wp-delvhost`
+    become: yes
+    template:
+      force: yes
+      src: wp-delvhost.j2
+      dest: "/usr/local/bin/wp-delvhost"
+      mode: "0755"
+      owner: root
+      group: root
+
+  - name: Place the `wp-update`
+    become: yes
+    copy:
+      src: wp-update.sh
+      dest: "/usr/local/bin/wp-update"
+      mode: "0755"
+      owner: root
+      group: root
+
+  - name: Add renewing letsencrypt to cron job
+    become: yes
+    cron:
+      name: "letsencrypt renew"
+      user: root
+      day: 1
+      job: "service nginx stop && letsencrypt renew && service nginx start || service nginx start"
+
+  - name: Add default server
+    become: yes
+    copy:
+      src: 000-default.conf
+      dest: "/etc/nginx/conf.d/000-default.conf"
+      mode: "0644"
+      owner: root
+      group: root
+
+  - name: Update Virtual Hosts
+    become: yes
+    shell: "/usr/local/bin/wp-addvhost {{ item }}"
+    with_items: "{{ vhosts | default([]) }}"

@@ -1,0 +1,38 @@
+--- # file: magic_vars.yml
+- hosts: all
+
+  gather_facts: "{{ check_env | default(False) }}"
+
+  tasks:
+
+    # Facts
+    - name: Facts | ansible_hostname
+      debug: var=ansible_hostname
+    - name: Facts | ansible_default_ipv4
+      debug: var=ansible_default_ipv4
+    - name: Facts | ansible_env
+      debug: var=ansible_env
+
+    # Magic variables
+    - name: Magic | group_names
+      debug: var=group_names
+    - name: Magic | groups
+      debug: var=groups
+    - name: Magic | inventory_hostname
+      debug: var=inventory_hostname
+    - name: Magic | inventory_hostname_short
+      debug: var=inventory_hostname_short
+    - name: Magic | play_hosts
+      debug: var=play_hosts
+    - name: Magic | inventory_dir
+      debug: var=inventory_dir
+    - name: Magic | inventory_file
+      debug: var=inventory_file
+
+    # Magic variable for Facts
+    - name: Magic for Facts | hostvars
+      debug: var=hostvars
+
+    # Reserved magic variable
+    - name: Reserved | environment
+      debug: var=environment

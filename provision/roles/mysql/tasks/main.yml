@@ -1,0 +1,59 @@
+---
+# tasks file for mysql
+
+  - stat:
+      path: /root/.my.cnf
+    register: stat
+    become: yes
+
+  - name: Genarate a password for MySQL
+    shell: makepasswd --chars=12
+    register: mysql_root_password
+    when: false == stat.stat.exists
+
+  - name: Place `.my.cnf`
+    become: yes
+    template:
+      force: no
+      src: templates/.my.cnf
+      dest: "/root/.my.cnf"
+      mode: "0600"
+      owner: root
+      group: root
+    when: false == stat.stat.exists
+
+  - name: Set MySQL root password before installing
+    become: yes
+    debconf:
+      name: mysql-server
+      question: mysql-server/root_password
+      value: "{{ mysql_root_password.stdout | quote }}"
+      vtype: password
+    when: false == stat.stat.exists
+
+  - name: Confirm MySQL root password before installing
+    become: yes
+    debconf:
+      name: mysql-server
+      question: mysql-server/root_password_again
+      value: "{{ mysql_root_password.stdout | quote }}"
+      vtype: password
+    when: false == stat.stat.exists
+
+  - name: Install MySQL
+    become: yes
+    apt: pkg=mysql-server state=latest update_cache=yes
+
+  - name: Make sure MySQL is running
+    become: yes
+    action: service name=mysql state=started enabled=true
+
+  - name: Activate MySQL Cache
+    become: yes
+    copy:
+      src: cache.cnf
+      dest: "/etc/mysql/mysql.conf.d/cache.cnf"
+      mode: "0644"
+      owner: root
+      group: root
+    notify: restart-mysql

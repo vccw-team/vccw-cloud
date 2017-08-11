@@ -1,0 +1,8 @@
+proxy_cache_path  /var/cache/nginx/default levels=1:2 keys_zone=default:4m max_size=50m inactive=30d;
+
+server {
+  listen 80 default_server;
+  location / {
+    root /var/www/html;
+  }
+}

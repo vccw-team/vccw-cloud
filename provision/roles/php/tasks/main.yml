@@ -1,0 +1,44 @@
+---
+# tasks file for php
+
+  - name: Install PHP packages
+    become: yes
+    apt: name={{ item }} state=latest update_cache=yes
+    with_items: "{{ php_packages }}"
+    notify: restart-apache
+
+  # Install Composer libraries
+  - name: Download the Composer
+    become: yes
+    get_url:
+      url: https://getcomposer.org/installer
+      dest: /tmp/composer-setup.php
+      mode: 0755
+      force: yes
+
+  - name: Run the Composer installer
+    become: yes
+    shell: "php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer"
+
+  - name: Place the `~/.bash.d/composer.sh`
+    template:
+      src: templates/composer.sh
+      dest: "{{ ansible_env.HOME }}/.bash.d/composer.sh"
+
+  - name: Change owner `/var/lib/php/sessions`
+    become: yes
+    file:
+      path: /var/lib/php/sessions
+      owner: "{{ ansible_env.USER }}"
+      group: "{{ ansible_env.USER }}"
+
+  # php config.
+  - name: Update php.ini
+    become: yes
+    lineinfile:
+      dest: /etc/php/7.0/apache2/conf.d/99-wordpress.ini
+      create: yes
+      line: "{{ item.key }} = {{ item.value }}"
+    with_dict: "{{ php_ini }}"
+    notify:
+      - restart-apache

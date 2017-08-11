@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+set -eu
+
+error() {
+  echo -e "\033[0;31m$1\033[0;39m";
+  exit 1;
+}
+
+warn() {
+  echo -e "\033[0;33m$1\033[0;39m";
+  exit 1;
+}
+
+success() {
+  echo -e "\033[0;32m$1\033[0;39m";
+}
+
+if [ 'root' != `whoami` ]; then
+  error "Error: You don't have permission."
+fi
+
+if [ $# -lt 1 ]; then
+	error "Usage: wp-delvhost <host-name>"
+fi
+
+if [[ ! "$1" =~ ^([a-z0-9\-]+\.)+[a-z]{2,3}$ ]]; then
+	error "Usage: wp-delvhost <host-name>"
+fi
+
+HOST_NAME=$1
+HOST_DIR=/var/www/$HOST_NAME
+
+read -p "\`$HOST_NAME\` will be deleted. Are you really ok? (y/N) " answer
+
+if [ 'y' != "${answer:0:1}" ] && [ 'Y' != "${answer:0:1}" ]; then
+  warn "Please try again."
+fi
+
+read -p "Do you want to delete database and user? (y/N) " answer
+
+if [ 'y' = "${answer:0:1}" ] || [ 'Y' = "${answer:0:1}" ]; then
+  sudo -u root -H mysql -e "DROP DATABASE IF EXISTS \`$HOST_NAME\`;"
+  sudo -u root -H mysql -e "DROP USER IF EXISTS '$HOST_NAME'@'localhost';"
+fi
+
+read -p "Do you want to delete WordPress files? (y/N) " answer
+
+if [ 'y' = "${answer:0:1}" ] || [ 'Y' = "${answer:0:1}" ]; then
+  rm -fr $HOST_DIR
+fi
+
+if [ -e /etc/letsencrypt/live/${HOST_NAME} ]; then
+  rm -fr /etc/letsencrypt/live/${HOST_NAME}
+fi
+
+a2dissite $HOST_NAME || service apache2 reload
+rm -f /etc/apache2/sites-available/${HOST_NAME}.conf || service apache2 reload
+rm -f /etc/nginx/conf.d/${HOST_NAME}.conf || service nginx reload
+rm -fr /var/cache/nginx/${HOST_NAME} || service nginx reload
+
+service apache2 reload
+service nginx reload
+
+success "Nginx and Apache2 was successfully restarted."
+success "\`${HOST_NAME}\` was successfully deleted. "
+success "Please delete alias from \`~/.wp-cli/config.yml\`"

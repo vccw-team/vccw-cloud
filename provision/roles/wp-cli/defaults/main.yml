@@ -1,0 +1,6 @@
+---
+# defaults file for wp-cli
+
+wp_cli_bin_url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar
+wp_cli_packages:
+  - vccw/wp-cli-scaffold-movefile:@stable

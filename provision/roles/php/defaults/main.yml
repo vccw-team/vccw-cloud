@@ -1,0 +1,24 @@
+---
+# defaults file for php
+
+php_packages:
+  - php7.0
+  - libapache2-mod-php7.0
+  - php7.0-cli
+  - php7.0-dev
+  - php7.0-mbstring
+  - php7.0-mcrypt
+  - php7.0-mysql
+  - php7.0-gd
+  - php7.0-curl
+  - php7.0-zip
+  - php-imagick
+php_ini:
+  date.timezone: UTC
+  default_charset: UTF-8
+  mbstring.language: neutral
+  mbstring.internal_encoding: UTF-8
+  post_max_size: 10M # Same with VVV
+  short_open_tag: Off
+  upload_max_filesize: 10M # Same with VVV
+  memory_limit: 256M
