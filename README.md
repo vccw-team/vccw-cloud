@@ -8,17 +8,10 @@ SSH into your machine.
 $ ssh ubuntu@<ip>
 ```
 
-Clone this repository in your machine and change directory into the repo.
+Then run following.
 
 ```
-$ git clone https://github.com/coderdojo-japan/dojopaas-wordpress
-$ cd dojopaas-wordpress
-```
-
-Run following. You must not run as the root user.
-
-```
-$ ansible-playbook provision/playbook.yml --connection=local
+$ curl https://raw.githubusercontent.com/coderdojo-japan/dojopaas-wordpress/master/provision.sh | bash
 ```
 
 ## Testing
