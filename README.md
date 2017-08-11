@@ -11,11 +11,11 @@ $ ssh ubuntu@<ip>
 Clone this repository in your machine and change directory into the repo.
 
 ```
-$ https://github.com/coderdojo-japan/dojopaas-wordpress
+$ git clone https://github.com/coderdojo-japan/dojopaas-wordpress
 $ cd dojopaas-wordpress
 ```
 
-Run following.
+Run following. You must not run as the root user.
 
 ```
 $ ansible-playbook provision/playbook.yml --connection=local
