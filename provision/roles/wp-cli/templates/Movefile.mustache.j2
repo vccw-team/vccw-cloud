@@ -27,5 +27,5 @@ production:
   ssh:
     host: "{{ inventory_hostname }}"
     user: "{{ ansible_env.USER }}"
-    port: {{ hostvars[inventory_hostname].ansible_ssh_port }} # Port is optional
+    port: 22 # Port is optional
     rsync_options: "--verbose" # Additional rsync options, optional

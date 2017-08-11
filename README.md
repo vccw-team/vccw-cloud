@@ -1,13 +1,24 @@
-# Ubuntu based WordPress stack
+# An ansible based proisioner for WordPress
 
-## Requires
+## How to use
 
-* Ansible 2.2.x
-
-## Run
+SSH into your machine.
 
 ```
-$ ansible-playbook provision/playbook.yml
+$ ssh ubuntu@<ip>
+```
+
+Clone this repository in your machine and change directory into the repo.
+
+```
+$ https://github.com/coderdojo-japan/dojopaas-wordpress
+$ cd dojopaas-wordpress
+```
+
+Run following.
+
+```
+$ sudo ansible-playbook provision/playbook.yml --connection=local
 ```
 
 ## Testing
