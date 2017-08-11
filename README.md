@@ -18,7 +18,7 @@ $ cd dojopaas-wordpress
 Run following.
 
 ```
-$ sudo ansible-playbook provision/playbook.yml --connection=local
+$ ansible-playbook provision/playbook.yml --connection=local
 ```
 
 ## Testing
