@@ -1,6 +1,17 @@
-# An ansible based provisioner for WordPress
+# VCCW on Cloud
+
+This is a cloud envirionment for WordPress based on [VCCW](http://vccw.cc/).
+
+* VirtualHost Support
+* SSL + Let's Encrypt
+* Apache + Nginx Reverse proxy
+* PHP7
 
 ## How to use
+
+### Requires
+
+* Ubuntu 16.04
 
 ### Install
 
@@ -13,7 +24,7 @@ $ ssh ubuntu@<ip>
 Then run following.
 
 ```
-$ curl https://raw.githubusercontent.com/coderdojo-japan/dojopaas-wordpress/master/provision.sh | bash
+$ curl https://raw.githubusercontent.com/vccw-team/vccw-cloud/master/provision.sh | bash
 ```
 
 ### Add virtual host of WordPress
