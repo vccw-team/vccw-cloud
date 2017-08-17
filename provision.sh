@@ -2,6 +2,8 @@
 
 set -ex
 
+sudo pwd > /dev/null # To prevent the sudo error
+
 PLAYBOOK_DIR=$HOME/.playbook
 PLAYBOOK_REPO=https://github.com/vccw-team/vccw-cloud
 
