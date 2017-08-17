@@ -16,3 +16,4 @@ common_packages:
   - letsencrypt
   - makepasswd
   - exim4
+  - vim

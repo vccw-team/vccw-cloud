@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -ex
+
+service nginx stop && letsencrypt renew && service nginx start || service nginx start

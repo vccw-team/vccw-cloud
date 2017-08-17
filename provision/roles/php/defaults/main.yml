@@ -21,4 +21,4 @@ php_ini:
   post_max_size: 10M # Same with VVV
   short_open_tag: Off
   upload_max_filesize: 10M # Same with VVV
-  memory_limit: 256M
+  memory_limit: 512M

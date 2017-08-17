@@ -28,13 +28,14 @@
       owner: root
       group: root
 
-  - name: Add renewing letsencrypt to cron job
+  - name: Set up cron for letsencrypt
     become: yes
-    cron:
-      name: "letsencrypt renew"
-      user: root
-      day: 1
-      job: "service nginx stop && letsencrypt renew && service nginx start || service nginx start"
+    copy:
+      src: letsencrypt
+      dest: "/etc/cron.monthly/letsencrypt"
+      mode: "0755"
+      owner: root
+      group: root
 
   - name: Add default server
     become: yes
