@@ -3,3 +3,4 @@
 /provision/playbook.retry
 /vendor/
 /scaffold-vhost/
+/hosts
