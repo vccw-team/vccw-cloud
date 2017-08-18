@@ -2,7 +2,7 @@
 
 set -ex
 
-sudo apt install ansible
+sudo apt install ansible git -y
 
 PLAYBOOK_DIR=$HOME/.playbook
 PLAYBOOK_REPO=https://github.com/vccw-team/vccw-cloud
