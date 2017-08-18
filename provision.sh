@@ -12,7 +12,8 @@ cd $PLAYBOOK_DIR
 
 if [ ! -f hosts ]; then
   cat << EOS > hosts
-hosts=localhost
+[default]
+localhost
 EOS
 fi
 
