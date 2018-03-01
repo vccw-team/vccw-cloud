@@ -24,7 +24,7 @@ if [ $# -lt 1 ]; then
 	error "Usage: wp-delvhost <host-name>"
 fi
 
-if [[ ! "$1" =~ ^([a-z0-9\-]+\.)+[a-z]{2,3}$ ]]; then
+if [[ ! "$1" =~ ^([a-z0-9\-]+\.)+[a-z]{2,15}$ ]]; then
 	error "Usage: wp-delvhost <host-name>"
 fi
 
