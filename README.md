@@ -1,4 +1,4 @@
-# VCCW on Cloud
+# WP on Cloud
 
 This is a cloud envirionment for WordPress based on [VCCW](http://vccw.cc/).
 
@@ -11,7 +11,7 @@ This is a cloud envirionment for WordPress based on [VCCW](http://vccw.cc/).
 
 ### Requires
 
-* Ubuntu 16.04
+* Ubuntu 18.04
 
 ### Install
 

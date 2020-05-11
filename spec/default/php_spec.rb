@@ -1,17 +1,16 @@
 require 'spec_helper'
 
 packages = %w{
-  php7.0
-  libapache2-mod-php7.0
-  php7.0-cli
-  php7.0-dev
-  php7.0-mbstring
-  php7.0-mcrypt
-  php7.0-mysql
-  php7.0-gd
-  php7.0-curl
-  php7.0-zip
-  php-imagick
+  php
+  libapache2-mod-php
+  php-cli
+  php-dev
+  php-mbstring
+  php-mcrypt
+  php-mysql
+  php-gd
+  php-curl
+  php-zip
 }
 
 packages.each do | package |
