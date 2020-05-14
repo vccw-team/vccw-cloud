@@ -25,7 +25,7 @@
     replace:
       dest: /etc/apache2/envvars
       regexp: APACHE_RUN_USER=.*
-      replace: "APACHE_RUN_USER=ubuntu"
+      replace: "APACHE_RUN_USER={{ ansible_env.USER }}"
     notify:
       - restart-apache
 
@@ -34,7 +34,7 @@
     replace:
       dest: /etc/apache2/envvars
       regexp: APACHE_RUN_GROUP=.*
-      replace: "APACHE_RUN_GROUP=ubuntu"
+      replace: "APACHE_RUN_GROUP={{ ansible_env.USER }}"
     notify:
       - restart-apache
 

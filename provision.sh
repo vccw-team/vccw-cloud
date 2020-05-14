@@ -2,9 +2,9 @@
 
 set -ex
 
-apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get -y -q -o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-confold' upgrade dist
-apt install ansible git -y
+sudo apt-get update
+sudo DEBIAN_FRONTEND=noninteractive apt-get -y -q -o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-confold' upgrade dist
+sudo apt install ansible git -y
 
 PLAYBOOK_DIR=$HOME/.playbook
 PLAYBOOK_REPO=https://github.com/vccw-team/vccw-cloud
