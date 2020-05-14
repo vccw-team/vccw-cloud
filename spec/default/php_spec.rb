@@ -6,7 +6,6 @@ packages = %w{
   php-cli
   php-dev
   php-mbstring
-  php-mcrypt
   php-mysql
   php-gd
   php-curl
