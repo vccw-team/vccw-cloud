@@ -1,5 +1,0 @@
----
-# defaults file for nginx
-
-nginx_packages:
-  - nginx
