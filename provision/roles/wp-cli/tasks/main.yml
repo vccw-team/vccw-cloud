@@ -23,24 +23,6 @@
       mode: "0644"
       force: no
 
-  - name: Place the `~/.wp-cli/Movefile.mustache`
-    become: no
-    template:
-      force: yes
-      src: Movefile.mustache.j2
-      dest: "{{ ansible_env.HOME }}/.wp-cli/Movefile.mustache"
-      mode: "0644"
-
-  - name: Install WP-CLI packages
-    become: no
-    shell: /bin/bash -lc "wp package install '{{ item }}'"
-    with_items: "{{ wp_cli_packages | default( [] ) }}"
-
-  - name: Install WP-CLI packages
-    become: no
-    shell: /bin/bash -lc "wp package update '{{ item }}'"
-    with_items: "{{ wp_cli_packages | default( [] ) }}"
-
   - name: Setup a bash completion for the WP-CLI
     get_url:
       url: https://raw.githubusercontent.com/wp-cli/wp-cli/master/utils/wp-completion.bash
